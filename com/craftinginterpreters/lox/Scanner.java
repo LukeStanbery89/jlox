@@ -95,8 +95,9 @@ class Scanner {
                 break;
             case '/':
                 if (match('/')) {
-                    // A comment foes until the end of the line.
-                    while (peek()!= '\n' && !isAtEnd()) advance();
+                    singleLineComment();
+                } else if (match('*')) {
+                    multiLineComment();
                 } else {
                     addToken(SLASH);
                 }
@@ -162,6 +163,24 @@ class Scanner {
         // Trim the surrounding quotes.
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
+    }
+
+    public void singleLineComment() {
+        // A comment foes until the end of the line.
+        while (peek() != '\n' && !isAtEnd()) advance();
+    }
+
+    // TODO: Add support for nested multi-line comments
+    public void multiLineComment() {
+        while(peek() != '*' && peekNext() != '/') {
+            if (isAtEnd()) Lox.error(line, "Unterminated multi-line comment.");
+            if (peek() == '\n') line++;
+            advance();
+        }
+        if (peek() == '*' && peekNext() == '/') {
+            advance();
+            advance();
+        }
     }
 
     private boolean match(char expected) {
